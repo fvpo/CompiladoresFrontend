@@ -1,0 +1,38 @@
+  <programa> ::= <dec_funcao> <programa> | <main>
+  <dec_funcao> ::= "def " <nome_metodo> '(' <lista_parametros> ')' '{' <corpo_metodo> '}'
+
+  <classe> ::= 'class' <nome_classe> '{' <lista_membros> '}'
+	<expressao_objeto> ::= 'new' <nome_classe> '(' <lista_argumentos> ')'
+	<declaracao_metodo> ::= <dec_funcao>
+	<chamada_metodo> ::= <nome_objeto> '.' <nome_metodo> '(' <lista_argumentos> ')'
+	<instanciacao>::= <nome_objeto> "=" <expressao_objeto>
+	
+	<lista_membros> ::= <membro> | <membro> <lista_membros>
+	<lista_parametros> ::= | <parametro> | <parametro> ',' <lista_parametros>
+	<lista_argumentos> ::= | <argumento> | <argumento> ',' <lista_argumentos>
+	
+  
+	<membro> ::= <declaracao_atributo> | <declaracao_metodo>
+	<nome_metodo> ::= <identificador>
+	<nome_classe> ::= <identificador>
+	<nome_metodo> ::= <identificador>
+	<nome_objeto> ::= <identificador>
+	
+	<corpo_metodo> ::= <bloco>
+	<tipo_retorno> ::= <tipo>
+	
+	<paralel_block>::= 'PAR' <line_break> <code_block_idented>
+	<sequential_block>::= 'SEQ' <line_break> <code_block_idented>
+	<code_block_idented>::= "   " <bloco>
+	
+	<bloco>::=  <dec_variavel> | <comando> |  <dec_variavel> <bloco> |<comando> <bloco>
+	<dec_variavel>::= <identificador> "=" <expr>
+	<comando>::= <instanciacao> | <chamada_metodo> | <print_comando> | <for_comando> | <if_comando>
+	<print_comando> "print" "(" <texto> ")" ";" 
+	<texto> ::= '"' <sequencia_chars> '"' 
+	<identificador> ::= <letra> | <letra> <sequencia_chars>
+	<sequencia_chars>::= <caractere> | <caractere> <sequencia_chars>
+	<caractere> ::= <letra> | <numero>
+	<letra> ::= "A" | ... | "Z" | "a" | ... | "z" 
+	<numero>::= "0" | ... | "9"
+	<tipo>::= "void" | "int" | "float" | "String" | <identificador> 
