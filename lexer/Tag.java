@@ -1,50 +1,60 @@
 package lexer;
 
 public enum Tag {
-    IF,
-    ELSE,
-    WHILE,
-    DO,
-    BREAK,
 
-    TRUE,
-    FALSE,
+    // 🔹 Fim de arquivo e erros
+    EOF,            // fim do código-fonte
+    UNKNOWN,        // token inválido
 
-    BASIC,      // tipo básico (int, float, bool, etc.)
-    ID,         // identificador (variável, função, classe, etc.)
-    INDEX,      // acesso a array ou objeto
-    TEMP,       // variável temporária usada internamente
+    // 🔹 Palavras-chave de controle de fluxo
+    IF, ELSE, WHILE, FOR,
+    BREAK, CONTINUE, RETURN,
 
-    AND,        // &&
-    OR,         // ||
-    NOT,        // !
+    // 🔹 Blocos de execução
+    SEQ,            // execução sequencial
+    PAR,            // execução paralela (Thread)
 
-    EQ,         // ==
-    NE,         // !=
-    LE,         // <=
-    GE,         // >=
-    LT,         // <
-    GT,         // >
+    C_CHANNEL,      // tipo de variável canal de comunicação
 
-    PLUS,       // +
-    MINUS,      // -
-    MULT,       // *
-    DIV,        // /
+    STRING,         // tipo string
 
-    NUM,        // número inteiro
-    REAL,       // número real (float, double)
+    // 🔹 Literais
+    TRUE, FALSE,    // booleanos
+    NUM,            // número inteiro
+    REAL,           // número real (float)
 
-    ASSIGN,     // =
-    SEMICOLON,  // ;
-    COMMA,      // ,
-    DOT,        // .
-    LPAREN,     // (
-    RPAREN,     // )
-    LBRACE,     // {
-    RBRACE,     // }
-    LBRACKET,   // [
-    RBRACKET,   // ]
+    // 🔹 Operadores lógicos
+    AND, OR, NOT,
 
-    EOF,        // fim de arquivo
-    UNKNOWN     // token não reconhecido
+    // 🔹 Operadores relacionais
+    EQ, NE, LT, LE, GT, GE,
+
+    // 🔹 Operadores aritméticos
+    PLUS, MINUS, MULT, DIV, MOD,
+
+    // 🔹 Atribuição e outros operadores
+    ASSIGN,         // =
+    PLUS_ASSIGN,    // +=
+    MINUS_ASSIGN,   // -=
+    MULT_ASSIGN,    // *=
+    DIV_ASSIGN,     // /=
+
+    // 🔹 Operadores de incremento/decremento
+    INC,            // ++
+    DEC,            // --
+
+    // 🔹 Símbolos e pontuação
+    LPAREN, RPAREN,         // ( )
+    LBRACE, RBRACE,         // { }
+    LBRACKET, RBRACKET,     // [ ]
+
+    // 🔹 Identificadores e auxiliares
+    ID,             // identificador genérico
+    TEMP,           // variável temporária interna
+    INDEX,          // acesso a vetor/objeto
+    COMMENT,        // comentário (inicia com #)
+
+    INDENT,     // início de um novo bloco
+    DEDENT,     // fim de um bloco anterior
+    NEWLINE,    // quebra de linha
 }
