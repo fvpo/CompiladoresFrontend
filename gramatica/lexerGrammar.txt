@@ -24,14 +24,19 @@
 	<code_block_idented>::= "    " <bloco>
 	<bloco>::=  <dec_variavel> | <comando> |  <dec_variavel> <bloco> |<comando> <bloco>
 	<dec_variavel>::= <identificador> "=" <expr>
+	
 	<comando>::= <instanciacao> | <chamada_metodo> | <chamada_func> | <print_comando> | <for_comando> | <if_comando> | <while_comando> | 
-	
 	<print_comando> ::= "print" "(" <texto> ")" ";" 
-	<if_comando> ::= "if" "(" <identificador> ")" ":" <bloco_identado> |   "if" "(" <op_log> ")" ":" <bloco_identado>
+	<if_comando> ::= "if" "(" <expr> ")" ":" <bloco_identado>
 	<else_comando> ::= <if_comando> "else:" <bloco_identado> | <if_comando> "else" <if_comando>
-	<for_comando> ::= "for" "(" <dec_variavel> ; <op_log> ; <dec_variavel> ")" ":" <bloco_identado>
-	<while_comando> ::= "while" "(" <op_log> ")" ":" <bloco_identado> | "while" "(" <identificador> ")" ":" <bloco_identado> | 
+	<for_comando> ::= "for" "(" <dec_variavel> ; <op_log> ; op_ari ")" ":" <bloco_identado>
+	<while_comando> ::= "while" "(" expr ")" ":" <bloco_identado> 
 	
+	<expr> ::= <op_log> | <op_ari>
+	<op_log> ::= <op_ari> "==" <op_ari> | <op_ari> ">=" <op_ari> | <op_ari> "<=" <op_ari> | <op_ari> ">" <op_ari> | <op_ari> ">" <op_ari>
+	<op_ari> ::= <term> "/" <term> | <term> "*" <term> | <term> 
+	<term> ::= <identificador> "+" <identificador> | <identificador> "-" <identificador> | <identificador>
+
 	<texto> ::= '"' <sequencia_chars> '"' 
 	<identificador> ::= <letra> | <letra> <sequencia_chars>
 	<sequencia_chars>::= <caractere> | <caractere> <sequencia_chars>
