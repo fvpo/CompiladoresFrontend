@@ -26,10 +26,11 @@
 	<dec_variavel>::= <identificador> "=" <expr>
 	<comando>::= <instanciacao> | <chamada_metodo> | <chamada_func> | <print_comando> | <for_comando> | <if_comando> | <while_comando> | 
 	
-	<print_comando> "print" "(" <texto> ")" ";" 
-	<if_comando> "if" "(" <identificador> ")" ":" <bloco_identado> |   "if" "(" <op_log> ")" ":" <bloco_identado>
-	<for_comando> "for" "(" <dec_variavel> ; <op_log> ; <dec_variavel> ")" ":" <bloco_identado>
-	<while_comando> "while" "(" <op_log> ")" ":" <bloco_identado> | "while" "(" <identificador> ")" ":" <bloco_identado> | 
+	<print_comando> ::= "print" "(" <texto> ")" ";" 
+	<if_comando> ::= "if" "(" <identificador> ")" ":" <bloco_identado> |   "if" "(" <op_log> ")" ":" <bloco_identado>
+	<else_comando> ::= <if_comando> "else:" <bloco_identado> | <if_comando> "else" <if_comando>
+	<for_comando> ::= "for" "(" <dec_variavel> ; <op_log> ; <dec_variavel> ")" ":" <bloco_identado>
+	<while_comando> ::= "while" "(" <op_log> ")" ":" <bloco_identado> | "while" "(" <identificador> ")" ":" <bloco_identado> | 
 	
 	<texto> ::= '"' <sequencia_chars> '"' 
 	<identificador> ::= <letra> | <letra> <sequencia_chars>
