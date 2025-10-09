@@ -14,5 +14,7 @@ public class Type extends Word{
             intWord     = new Type("int", Tag.BASIC, 4),
             boolWord     = new Type("bool", Tag.BASIC, 1),
             floatWord   = new Type("float", Tag.BASIC, 8),
-            charWord = new Type("char", Tag.BASIC, 1);
+            charWord = new Type("char", Tag.BASIC, 1),
+            cchannelWord = new Type("c_channel", Tag.BASIC, 8),
+            stringWord  = new Type("string", Tag.BASIC, 8);
 }

@@ -25,7 +25,13 @@
 	<bloco>::=  <dec_variavel> | <comando> |  <dec_variavel> <bloco> |<comando> <bloco>
 	<dec_variavel>::= <identificador> "=" <expr>
 	
-	<comando>::= <instanciacao> | <chamada_metodo> | <chamada_func> | <print_comando> | <for_comando> | <if_comando> | <while_comando>
+	
+	<comando> ::= <instanciacao> | <chamada_metodo> | <chamada_func> | <print_comando> |
+                 <for_comando> | <if_comando> | <while_comando> | <send_comando> | <receive_comando>
+	<canal_expr> ::= <identificador> | <expressao_objeto>
+	<send_comando> ::= "send" "(" <expr> "," <canal_expr> ")" ";" 
+	<receive_comando> ::= <identificador> "=" "receive" "(" <canal_expr> ["," <receive_opts>] ")" ";"
+	<receive_opts> ::= <numero>
 	<if_comando> ::= "if" "(" <expr> ")" ":" <bloco_identado>
 	<else_comando> ::= <if_comando> "else:" <bloco_identado> | <if_comando> "else" <if_comando>
 	<for_comando> ::= "for" "(" <dec_variavel> ; <op_log> ; op_ari ")" ":" <bloco_identado>
@@ -36,12 +42,6 @@
 	<op_ari> ::= <op_ari>  "+" <term> | <op_ari> "-" <term> | <term> 
 	<term> ::= <term> "/" <identificador> | <term> "*" <identificador> | <identificador> | <term> "/" <numero> | <term> "*" <numero> | <numero>
 
-	<comando> ::= <instanciacao> | <chamada_metodo> | <chamada_func> | <print_comando> |
-                 <for_comando> | <if_comando> | <while_comando> | <send_comando> | <receive_comando>
-    <canal_expr> ::= <identificador> | <expressao_objeto>
-    <send_comando> ::= "send" "(" <expr> "," <canal_expr> ")" ";" 
-    <receive_comando> ::= <identificador> "=" "receive" "(" <canal_expr> ["," <receive_opts>] ")" ";"
-    <receive_opts> ::= <numero>
 
 	<texto> ::= '"' <sequencia_chars> '"' 
 	<identificador> ::= <letra> | <letra> <sequencia_chars>
