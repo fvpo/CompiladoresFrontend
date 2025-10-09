@@ -6,22 +6,30 @@ public enum Tag {
     EOF,            // fim do código-fonte
     UNKNOWN,        // token inválido
 
+    // 🔹 Estruturas de definição
+    CLASS,          // 'class'
+    NEW,            // 'new'
+
     // 🔹 Palavras-chave de controle de fluxo
     IF, ELSE, WHILE, FOR,
     BREAK, CONTINUE, RETURN,
 
-    // 🔹 Blocos de execução
+    // 🔹 Blocos de execução e concorrência
     SEQ,            // execução sequencial
-    PAR,            // execução paralela (Thread)
+    PAR,            // execução paralela (threads ou blocos simultâneos)
 
-    C_CHANNEL,      // tipo de variável canal de comunicação
+    BASIC,
 
-    STRING,         // tipo string
+    //Tipos não básicos
+    STRING,
+    C_CHANNEL,
 
-    // 🔹 Literais
+    // 🔹 Literais e identificadores
     TRUE, FALSE,    // booleanos
     NUM,            // número inteiro
     REAL,           // número real (float)
+    TEXT,           // texto entre aspas (string literal)
+    ID,             // identificador genérico
 
     // 🔹 Operadores lógicos
     AND, OR, NOT,
@@ -32,14 +40,14 @@ public enum Tag {
     // 🔹 Operadores aritméticos
     PLUS, MINUS, MULT, DIV, MOD,
 
-    // 🔹 Atribuição e outros operadores
+    // 🔹 Atribuição e operadores compostos
     ASSIGN,         // =
     PLUS_ASSIGN,    // +=
     MINUS_ASSIGN,   // -=
     MULT_ASSIGN,    // *=
     DIV_ASSIGN,     // /=
 
-    // 🔹 Operadores de incremento/decremento
+    // 🔹 Incremento/decremento
     INC,            // ++
     DEC,            // --
 
@@ -47,14 +55,23 @@ public enum Tag {
     LPAREN, RPAREN,         // ( )
     LBRACE, RBRACE,         // { }
     LBRACKET, RBRACKET,     // [ ]
+    DOT,                    // .
+    COMMA,                  // ,
+    SEMICOLON,              // ;
+    COLON,                  // :
 
-    // 🔹 Identificadores e auxiliares
-    ID,             // identificador genérico
-    TEMP,           // variável temporária interna
-    INDEX,          // acesso a vetor/objeto
-    COMMENT,        // comentário (inicia com #)
-
-    INDENT,     // início de um novo bloco
-    DEDENT,     // fim de um bloco anterior
+    // 🔹 Estrutura de blocos por indentação
+    INDENT,     // início de um novo bloco (tabulação)
+    DEDENT,     // fim de bloco anterior (redução de indentação)
     NEWLINE,    // quebra de linha
+
+    // 🔹 Comentários
+    COMMENT,    // inicia com #, //, ou bloco de comentário
+
+    // 🔹 Auxiliares internos
+    TEMP,       // variável temporária interna
+    INDEX,       // acesso a vetor/objeto
+
+    //Print
+    PRINT
 }
