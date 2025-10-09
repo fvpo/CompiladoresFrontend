@@ -1,5 +1,7 @@
 package lexer;
 
+import symbols.Type;
+
 import java.io.*;
 import java.util.*;
 
@@ -8,14 +10,17 @@ public class Lexer {
     private char peek = ' ';
     private final Hashtable<String, Word> words = new Hashtable<>();
 
-    // 🔹 Registra uma palavra reservada ou símbolo
-    void reserve(Word w) {
-        words.put(w.lexeme, w);
-    }
+    private final Stack<Integer> indentStack = new Stack<>();
+    private final Queue<Token> pendingTokens = new LinkedList<>();
 
-    // 🔹 Construtor — reserva todas as palavras e operadores conhecidos
+    private int currentIndent = 0;
+    private boolean atLineStart = true;
+
     public Lexer() {
-        // Palavras-chave
+        // 🔹 Inicializa com indentação base 0
+        indentStack.push(0);
+
+        // 🔹 Palavras-chave
         reserve(Word.ifWord);
         reserve(Word.elseWord);
         reserve(Word.whileWord);
@@ -23,25 +28,31 @@ public class Lexer {
         reserve(Word.breakWord);
         reserve(Word.continueWord);
         reserve(Word.returnWord);
+        reserve(Word.printWord);
 
-        // Blocos de execução
+        // 🔹 Blocos
         reserve(Word.seqWord);
         reserve(Word.parWord);
 
-        // Tipos de dados
-        reserve(Word.stringWord);
-        reserve(Word.cchannelWord);
+        // 🔹 Tipos
+        reserve(Type.stringWord);
+        reserve(Type.cchannelWord);
+        reserve(Type.voidWord);
+        reserve(Type.boolWord);
+        reserve(Type.intWord);
+        reserve(Type.floatWord);
+        reserve(Type.charWord);
 
-        // Booleanos
+        // 🔹 Booleanos
         reserve(Word.trueWord);
         reserve(Word.falseWord);
 
-        // Operadores lógicos
+        // 🔹 Operadores
         reserve(Word.andWord);
         reserve(Word.orWord);
         reserve(Word.notWord);
 
-        // Operadores relacionais
+        // 🔹 Relacionais
         reserve(Word.eqWord);
         reserve(Word.neWord);
         reserve(Word.ltWord);
@@ -49,25 +60,25 @@ public class Lexer {
         reserve(Word.gtWord);
         reserve(Word.geWord);
 
-        // Operadores aritméticos
+        // 🔹 Aritméticos
         reserve(Word.plusWord);
         reserve(Word.minusWord);
         reserve(Word.multWord);
         reserve(Word.divWord);
         reserve(Word.modWord);
 
-        // Atribuições
+        // 🔹 Atribuições
         reserve(Word.assignWord);
         reserve(Word.plusAssignWord);
         reserve(Word.minusAssignWord);
         reserve(Word.multAssignWord);
         reserve(Word.divAssignWord);
 
-        // Incremento/decremento
+        // 🔹 Incremento/decremento
         reserve(Word.incWord);
         reserve(Word.decWord);
 
-        // Símbolos
+        // 🔹 Símbolos
         reserve(Word.lparenWord);
         reserve(Word.rparenWord);
         reserve(Word.lbraceWord);
@@ -75,136 +86,129 @@ public class Lexer {
         reserve(Word.lbracketWord);
         reserve(Word.rbracketWord);
 
-        // Comentários
+        // 🔹 Comentário
         reserve(Word.commentWord);
     }
 
-    // 🔹 Lê um caractere
-    void readch() throws IOException {
-        int c = System.in.read();
-        if (c == -1)
-            peek = (char) -1; // EOF
-        else
-            peek = (char) c;
+    void reserve(Word w) {
+        words.put(w.lexeme, w);
     }
 
-    // 🔹 Lê e compara um caractere seguinte
+    void readch() throws IOException {
+        int c = System.in.read();
+        peek = (c == -1) ? (char) -1 : (char) c;
+    }
+
     boolean readch(char c) throws IOException {
         readch();
-        if (peek != c)
-            return false;
+        if (peek != c) return false;
         peek = ' ';
         return true;
     }
 
-    // 🔹 Método principal: reconhece o próximo token
     public Token scan() throws IOException {
-        // Ignora espaços e tabulações
+        // 🔹 Se houver tokens pendentes (como INDENT/DEDENT), devolve primeiro
+        if (!pendingTokens.isEmpty())
+            return pendingTokens.poll();
+
+        // 🔹 Se início de linha, mede a indentação
+        if (atLineStart) {
+            int indentCount = 0;
+            while (peek == ' ' || peek == '\t') {
+                indentCount += (peek == '\t') ? 4 : 1;
+                readch();
+            }
+
+            if (peek == '\n') { // linha vazia → ignora
+                readch();
+                line++;
+                return scan();
+            }
+
+            int prevIndent = indentStack.peek();
+            if (indentCount > prevIndent) {
+                indentStack.push(indentCount);
+                pendingTokens.add(new Token(Tag.INDENT));
+            } else if (indentCount < prevIndent) {
+                while (!indentStack.isEmpty() && indentStack.peek() > indentCount) {
+                    indentStack.pop();
+                    pendingTokens.add(new Token(Tag.DEDENT));
+                }
+            }
+            currentIndent = indentCount;
+            atLineStart = false;
+
+            if (!pendingTokens.isEmpty())
+                return pendingTokens.poll();
+        }
+
+        // 🔹 Ignora espaços entre tokens
         for (;; readch()) {
             if (peek == ' ' || peek == '\t') continue;
-            else if (peek == '\n') line++;
-            else break;
+            else if (peek == '\n') {
+                line++;
+                atLineStart = true;
+                readch();
+                return new Token(Tag.NEWLINE);
+            } else break;
         }
 
         // 🔹 Fim de arquivo
-        if (peek == (char) -1)
+        if (peek == (char) -1) {
+            // Antes de finalizar, gera DEDENTs restantes
+            while (indentStack.size() > 1) {
+                indentStack.pop();
+                pendingTokens.add(new Token(Tag.DEDENT));
+            }
+            if (!pendingTokens.isEmpty())
+                return pendingTokens.poll();
             return new Token(Tag.EOF);
+        }
 
-        // 🔹 Comentários iniciando com #
+        // 🔹 Comentário #
         if (peek == '#') {
-            do {
-                readch();
-            } while (peek != '\n' && peek != (char) -1);
-            return scan(); // ignora o comentário
+            do { readch(); } while (peek != '\n' && peek != (char) -1);
+            return scan();
         }
 
-        // 🔹 Operadores compostos e simples
+        // 🔹 Operadores
         switch (peek) {
-            case '=':
-                if (readch('=')) return Word.eqWord;
-                else { peek = ' '; return Word.assignWord; }
-
-            case '<':
-                if (readch('=')) return Word.leWord;
-                else { peek = ' '; return Word.ltWord; }
-
-            case '>':
-                if (readch('=')) return Word.geWord;
-                else { peek = ' '; return Word.gtWord; }
-
-            case '!':
-                if (readch('=')) return Word.neWord;
-                else { peek = ' '; return Word.notWord; }
-
-            case '+':
-                if (readch('+')) return Word.incWord;
-                if (readch('=')) return Word.plusAssignWord;
-                else { peek = ' '; return Word.plusWord; }
-
-            case '-':
-                if (readch('-')) return Word.decWord;
-                if (readch('=')) return Word.minusAssignWord;
-                else { peek = ' '; return Word.minusWord; }
-
-            case '*':
-                if (readch('=')) return Word.multAssignWord;
-                else { peek = ' '; return Word.multWord; }
-
-            case '/':
-                if (readch('=')) return Word.divAssignWord;
-                else { peek = ' '; return Word.divWord; }
-
-            case '%':
-                peek = ' ';
-                return Word.modWord;
-
-            case '(':
-                peek = ' ';
-                return Word.lparenWord;
-
-            case ')':
-                peek = ' ';
-                return Word.rparenWord;
-
-            case '{':
-                peek = ' ';
-                return Word.lbraceWord;
-
-            case '}':
-                peek = ' ';
-                return Word.rbraceWord;
-
-            case '[':
-                peek = ' ';
-                return Word.lbracketWord;
-
-            case ']':
-                peek = ' ';
-                return Word.rbracketWord;
+            case '=': if (readch('=')) return Word.eqWord; peek=' '; return Word.assignWord;
+            case '<': if (readch('=')) return Word.leWord; peek=' '; return Word.ltWord;
+            case '>': if (readch('=')) return Word.geWord; peek=' '; return Word.gtWord;
+            case '!': if (readch('=')) return Word.neWord; peek=' '; return Word.notWord;
+            case '+': if (readch('+')) return Word.incWord; if (readch('=')) return Word.plusAssignWord; peek=' '; return Word.plusWord;
+            case '-': if (readch('-')) return Word.decWord; if (readch('=')) return Word.minusAssignWord; peek=' '; return Word.minusWord;
+            case '*': if (readch('=')) return Word.multAssignWord; peek=' '; return Word.multWord;
+            case '/': if (readch('=')) return Word.divAssignWord; peek=' '; return Word.divWord;
+            case '%': peek=' '; return Word.modWord;
+            case '(': peek=' '; return Word.lparenWord;
+            case ')': peek=' '; return Word.rparenWord;
+            case '{': peek=' '; return Word.lbraceWord;
+            case '}': peek=' '; return Word.rbraceWord;
+            case '[': peek=' '; return Word.lbracketWord;
+            case ']': peek=' '; return Word.rbracketWord;
         }
 
-        // 🔹 Números (inteiros e reais)
+        // 🔹 Números
         if (Character.isDigit(peek)) {
             int v = 0;
-            do {
-                v = 10 * v + Character.digit(peek, 10);
-                readch();
-            } while (Character.isDigit(peek));
+            do { v = 10 * v + Character.digit(peek, 10); readch(); }
+            while (Character.isDigit(peek));
 
             if (peek != '.') return new Num(v);
 
-            float x = v;
-            float d = 10;
+            float x = v, d = 10;
             for (;;) {
                 readch();
                 if (!Character.isDigit(peek)) break;
-                x = x + Character.digit(peek, 10) / d;
-                d = d * 10;
+                x += Character.digit(peek, 10) / d;
+                d *= 10;
             }
             return new Real(x);
         }
 
-        // 🔹 Strings (entre aspas)
+        // 🔹 Strings
         if (peek == '"') {
             StringBuilder sb = new StringBuilder();
             readch();
@@ -212,17 +216,14 @@ public class Lexer {
                 sb.append(peek);
                 readch();
             }
-            readch(); // consome o fechamento "
-            return new Word(sb.toString(), Tag.STRING);
+            readch();
+            return new Word(sb.toString(), Tag.TEXT);
         }
 
-        // 🔹 Identificadores e palavras reservadas
         if (Character.isLetter(peek)) {
             StringBuilder b = new StringBuilder();
-            do {
-                b.append(peek);
-                readch();
-            } while (Character.isLetterOrDigit(peek));
+            do { b.append(peek); readch(); }
+            while (Character.isLetterOrDigit(peek));
 
             String s = b.toString();
             Word w = words.get(s);
@@ -233,7 +234,7 @@ public class Lexer {
             return w;
         }
 
-        // 🔹 Qualquer outro caractere é token desconhecido
+        // 🔹 Qualquer outro caractere
         Token tok = new Token(Tag.UNKNOWN);
         peek = ' ';
         return tok;
