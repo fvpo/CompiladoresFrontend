@@ -43,8 +43,10 @@ public class Word extends Token {
     // ==============================
     // 🔸 Tipos de dados
     // ==============================
-            stringWord  = new Word("string", Tag.STRING),
             cchannelWord = new Word("c_channel", Tag.C_CHANNEL),
+
+    sendWord = new Word("send", Tag.SEND),
+    receiveWord = new Word("receive", Tag.RECEIVE),
 
     // ==============================
     // 🔸 Literais
