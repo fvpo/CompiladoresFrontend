@@ -20,9 +20,13 @@ public enum Tag {
 
     BASIC,
 
-    //Tipos não básicos
+    // 🔹 Tipos não básicos
     STRING,
     C_CHANNEL,
+
+    // 🔹 Comunicação (novos tokens)
+    SEND,           // 'send' - envio de dados via canal/socket
+    RECEIVE,        // 'receive' - recepção de dados via canal/socket
 
     // 🔹 Literais e identificadores
     TRUE, FALSE,    // booleanos
@@ -70,8 +74,8 @@ public enum Tag {
 
     // 🔹 Auxiliares internos
     TEMP,       // variável temporária interna
-    INDEX,       // acesso a vetor/objeto
+    INDEX,      // acesso a vetor/objeto
 
-    //Print
+    // 🔹 Comando de saída
     PRINT
 }
