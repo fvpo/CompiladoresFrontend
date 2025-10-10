@@ -4,9 +4,12 @@ import lexer.*;
 
 import java.io.IOException;
 
+import symbols.Env;
+
 public class Parser {
     private Lexer lexer;
     private Token look;
+    private Env env = new Env(null); // ambiente global
 
     public Parser(Lexer lexer) throws IOException {
         this.lexer = lexer;
@@ -51,12 +54,21 @@ public class Parser {
     private void decFuncao() throws IOException {
         matchWord("def");
         String nome = nomeMetodo();
+        Env funcEnv = new Env(env); // novo escopo para o método
+        env = funcEnv; // atualiza o ambiente atual
+        if (env.containsInCurrent(nome)) {
+            error("Método '" + nome + "' já declarado no escopo atual");
+        }
         match(Tag.LPAREN);
         listaParametros();
         match(Tag.RPAREN);
         match(Tag.LBRACE);
         corpoMetodo();
         match(Tag.RBRACE);
+        match(Tag.SEMICOLON);
+        bloco();
+        matchWord("return");
+
     }
 
     private String nomeMetodo() throws IOException {
