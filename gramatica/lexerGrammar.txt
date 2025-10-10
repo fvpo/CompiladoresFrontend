@@ -34,7 +34,7 @@
 	<receive_opts> ::= <numero>
 	<if_comando> ::= "if" "(" <expr> ")" ":" <bloco_identado>
 	<else_comando> ::= <if_comando> "else:" <bloco_identado> | <if_comando> "else" <if_comando>
-	<for_comando> ::= "for" "(" <dec_variavel> ; <op_log> ; op_ari ")" ":" <bloco_identado>
+	<for_comando> ::= "for" "(" <dec_variavel> "in" <identificador> ")" ":" <bloco_identado>
 	<while_comando> ::= "while" "(" expr ")" ":" <bloco_identado> 
 	
 	<expr> ::= <op_log> | <op_ari>

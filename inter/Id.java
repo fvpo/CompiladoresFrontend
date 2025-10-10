@@ -19,7 +19,7 @@ public class Id extends Expr {
     // Avalia o valor da variável no ambiente de execução
     @Override
     public Object eval() {
-        Object val = Environment.getValue(getName());
+        Object val = Env.get(getName());
         if (val == null) {
             error("Variável não declarada: " + getName());
         }
@@ -28,7 +28,7 @@ public class Id extends Expr {
 
     // Define um novo valor para a variável (usado em atribuições)
     public void assign(Object value) {
-        Environment.setValue(getName(), value);
+        Env.put(getName(), value);
     }
 
     @Override
