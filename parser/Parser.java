@@ -133,11 +133,10 @@ public class Parser {
             move();
             if (look.tag == Tag.ASSIGN) {
                 match(Tag.ASSIGN);
-                Expr expr = expr();
-                Type idtype = (Type) look;
-                Id id = new Id(idword, idtype, 0);
+                Expr e = expr();
+                Id id = new Id(idword, Type.intWord, 0);
                 if (look.tag == Tag.SEMICOLON) match(Tag.SEMICOLON);
-                return new Assign(id, expr);
+                return new Assign(id, e);
             } else {
                 error("Comando inválido após identificador '" + idword.lexeme + "'");
                 return null;
