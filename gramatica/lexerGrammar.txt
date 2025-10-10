@@ -49,4 +49,6 @@
 	<caractere> ::= <letra> | <numero>
 	<letra> ::= "A" | ... | "Z" | "a" | ... | "z" 
 	<numero>::= "0" | ... | "9"
-	<tipo>::= "void" | "int" | "float" | "String" | <identificador> 
+	<tipo>::= "void" | "int" | "float" | "String" | <identificador>
+
+	<comentario> ::= "#" <sequencia_chars>
