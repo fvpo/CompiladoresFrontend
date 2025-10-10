@@ -1,27 +1,33 @@
 package symbols;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Env {
-    private Table table;
+    private static final Map<String, Object> table = new HashMap<>();
     private Env prev;
 
     public Env(Env n) {
-        table = new Table();
         prev = n;
     }
 
-    public void put(String name, Type type) {
-        table.put(name, type);
+    public static void put(String name, Object val) {
+        table.put(name, val);
+    }
+    public static Object getValue(String name) {
+        return table.get(name);
     }
 
-    public Type get(String name) {
-        for (Env e = this; e != null; e = e.prev) {
-            Type found = e.table.get(name);
-            if (found != null) return found;
+    public static Object get(String name) {
+        Object found = table.get(name);
+        if (found != null) {
+            return found;
+        } else {
+            return null; // não encontrado
         }
-        return null; // não encontrado
     }
 
-    public boolean containsInCurrent(String name) {
-        return table.contains(name);
+    public static boolean containsInCurrent(String name) {
+        return table.containsKey(name);
     }
 }

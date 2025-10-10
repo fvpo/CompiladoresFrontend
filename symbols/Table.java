@@ -3,13 +3,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Table {
-    private Map<String, Type> symbols = new HashMap<>();
+    private Map<String, Object> symbols = new HashMap<>();
 
-    public void put(String name, Type type) {
-        symbols.put(name, type);
+    public void put(String name, Object val) {
+        symbols.put(name, val);
     }
 
-    public Type get(String name) {
+    public Object get(String name) {
         return symbols.get(name);
     }
 
