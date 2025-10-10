@@ -1,15 +1,15 @@
 package parser;
 
 import lexer.*;
-
+import inter.*;
+import symbols.*;
 import java.io.IOException;
-
-import symbols.Env;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Parser {
-    private Lexer lexer;
+    private final Lexer lexer;
     private Token look;
-    private Env env = new Env(null); // ambiente global
 
     public Parser(Lexer lexer) throws IOException {
         this.lexer = lexer;
@@ -38,37 +38,38 @@ public class Parser {
         else error("Esperado palavra '" + s + "'");
     }
 
-    public void programa() throws IOException {
+    // =====================================================
+    //  INÍCIO DO PARSEADOR
+    // =====================================================
+
+    public Stmt programa() throws IOException {
+        // Gera o corpo principal do programa (funções ou main)
+        List<Stmt> stmts = new ArrayList<>();
+
         while (look.tag != Tag.EOF) {
             if (isWord("def")) {
-                decFuncao();
+                stmts.add(decFuncao());
             } else if (isWord("main")) {
-                mainDecl();
+                stmts.add(mainDecl());
                 break;
             } else {
                 error("Esperado 'def' ou 'main' no início do programa");
             }
         }
+
+        return new Seq(stmts); // programa = sequência de declarações
     }
 
-    private void decFuncao() throws IOException {
+    private Stmt decFuncao() throws IOException {
         matchWord("def");
         String nome = nomeMetodo();
-        Env funcEnv = new Env(env); // novo escopo para o método
-        env = funcEnv; // atualiza o ambiente atual
-        if (env.containsInCurrent(nome)) {
-            error("Método '" + nome + "' já declarado no escopo atual");
-        }
         match(Tag.LPAREN);
         listaParametros();
         match(Tag.RPAREN);
         match(Tag.LBRACE);
-        corpoMetodo();
+        Stmt corpo = corpoMetodo();
         match(Tag.RBRACE);
-        match(Tag.SEMICOLON);
-        bloco();
-        matchWord("return");
-
+        return corpo; // poderia ser FunctionDecl se você quiser modelar funções
     }
 
     private String nomeMetodo() throws IOException {
@@ -93,11 +94,8 @@ public class Parser {
 
     private void parametro() throws IOException {
         tipo();
-        if (look instanceof Word) {
-            move();
-        } else {
-            error("Esperado identificador após tipo do parâmetro");
-        }
+        if (look instanceof Word) move();
+        else error("Esperado identificador após tipo do parâmetro");
     }
 
     private void tipo() throws IOException {
@@ -110,185 +108,164 @@ public class Parser {
         }
     }
 
-    private void corpoMetodo() throws IOException {
-        bloco();
+    private Stmt corpoMetodo() throws IOException {
+        return bloco();
     }
 
-    private void bloco() throws IOException {
-        while (true) {
-            if (look instanceof Word) {
-                String lexeme = ((Word) look).lexeme;
-                if (isWord("print") || isWord("if") || isWord("for")) {
-                    comando();
-                } else {
-                    comando();
-                }
-            } else if (look.tag == Tag.SEMICOLON) {
-                match(Tag.SEMICOLON);
-            } else if (look.tag == Tag.RBRACE || look.tag == Tag.EOF) {
-                break;
-            } else {
-                if (isWord("print") || isWord("if") || isWord("for")) comando();
-                else break;
-            }
+    private Stmt bloco() throws IOException {
+        List<Stmt> stmts = new ArrayList<>();
+
+        while (look.tag != Tag.RBRACE && look.tag != Tag.EOF) {
+            stmts.add(comando());
         }
+
+        return new Seq(stmts);
     }
 
-    private void comando() throws IOException {
+    private Stmt comando() throws IOException {
         if (isWord("print")) {
-            printComando();
+            return printComando();
         } else if (isWord("if")) {
-            ifComando();
-        } else if (isWord("for")) {
-            forComando();
+            return ifComando();
         } else if (look instanceof Word) {
-            String id = ((Word) look).lexeme;
+            // atribuição ou chamada
+            Word idword = (Word) look;
             move();
             if (look.tag == Tag.ASSIGN) {
                 match(Tag.ASSIGN);
-                if (isWord("new")) {
-                    expressaoObjeto();
-                } else {
-                    expr();
-                }
+                Expr e = expr();
+                Id id = new Id(idword, Type.intWord, 0);
                 if (look.tag == Tag.SEMICOLON) match(Tag.SEMICOLON);
-            } else if (look.tag == Tag.DOT) {
-                match(Tag.DOT);
-                if (look instanceof Word) {
-                    String m = ((Word) look).lexeme;
-                    move();
-                    match(Tag.LPAREN);
-                    listaArgumentos();
-                    match(Tag.RPAREN);
-                    if (look.tag == Tag.SEMICOLON) match(Tag.SEMICOLON);
-                } else {
-                    error("Esperado nome de método após '.'");
-                }
+                return new Assign(id, e);
             } else {
-                error("Comando não reconhecido após identificador '" + id + "'");
+                error("Comando inválido após identificador '" + idword.lexeme + "'");
+                return null;
             }
         } else {
             error("Comando inválido: " + look);
+            return null;
         }
     }
 
-    private void instanciacao() throws IOException {
-        if (!(look instanceof Word)) error("Esperado identificador para instanciar");
-        String nome = ((Word) look).lexeme; move();
-        match(Tag.ASSIGN);
-        expressaoObjeto();
-        if (look.tag == Tag.SEMICOLON) match(Tag.SEMICOLON);
-    }
-
-    private void expressaoObjeto() throws IOException {
-        matchWord("new");
-        if (look instanceof Word) move(); else error("Esperado nome de classe após 'new'");
-        match(Tag.LPAREN);
-        listaArgumentos();
-        match(Tag.RPAREN);
-    }
-
-    private void listaArgumentos() throws IOException {
-        if (look.tag == Tag.RPAREN) return;
-        argumento();
-        while (look.tag == Tag.COMMA) {
-            match(Tag.COMMA);
-            argumento();
-        }
-    }
-
-    private void argumento() throws IOException {
-        expr();
-    }
-
-    private void expr() throws IOException {
-        if (look.tag == Tag.NUM) {
-            move();
-        } else if (look.tag == Tag.REAL) {
-            move();
-        } else if (look instanceof Word) {
-            move();
-        } else if (look.tag == Tag.LPAREN) {
-            match(Tag.LPAREN);
-            expr();
-            match(Tag.RPAREN);
-        } else {
-            error("Expressão esperada, encontrado: " + look);
-        }
-        while (look.tag == Tag.PLUS || look.tag == Tag.MINUS || look.tag == Tag.MULT || look.tag == Tag.DIV) {
-            move();
-            expr();
-        }
-    }
-
-    private void printComando() throws IOException {
+    private Stmt printComando() throws IOException {
         matchWord("print");
         match(Tag.LPAREN);
-        texto();
+        Expr e = expr();
         match(Tag.RPAREN);
         match(Tag.SEMICOLON);
+        return new Print(e);
     }
 
-
-
-    private void texto() throws IOException {
-        if (look instanceof Word) {
-            move();
-        } else {
-            error("Esperado string/texto dentro de print()");
-        }
-    }
-
-    private void ifComando() throws IOException {
+    private Stmt ifComando() throws IOException {
         matchWord("if");
         match(Tag.LPAREN);
-        expr();
+        Expr cond = expr();
         match(Tag.RPAREN);
+        Stmt thenStmt;
         if (look.tag == Tag.LBRACE) {
             match(Tag.LBRACE);
-            bloco();
+            thenStmt = bloco();
             match(Tag.RBRACE);
         } else {
-            comando();
+            thenStmt = comando();
         }
+
+        Stmt elseStmt = null;
         if (isWord("else")) {
             matchWord("else");
             if (look.tag == Tag.LBRACE) {
-                match(Tag.LBRACE); bloco(); match(Tag.RBRACE);
-            } else comando();
+                match(Tag.LBRACE);
+                elseStmt = bloco();
+                match(Tag.RBRACE);
+            } else {
+                elseStmt = comando();
+            }
+        }
+
+        return new If(cond, thenStmt, elseStmt);
+    }
+
+    // =====================================================
+    // EXPRESSÕES
+    // =====================================================
+
+    private Expr expr() throws IOException {
+        Expr left = term();
+        while (look.tag == Tag.PLUS || look.tag == Tag.MINUS) {
+            Token op = look;
+            move();
+            Expr right = term();
+            left = new Arith(op, left, right);
+        }
+        return left;
+    }
+
+    private Expr term() throws IOException {
+        Expr left = factor();
+        while (look.tag == Tag.MULT || look.tag == Tag.DIV) {
+            Token op = look;
+            move();
+            Expr right = factor();
+            left = new Arith(op, left, right);
+        }
+        return left;
+    }
+
+    private Expr factor() throws IOException {
+        Expr x;
+        switch (look.tag) {
+            case NUM:
+                x = new Constant(look, Type.intWord);
+                move();
+                return x;
+            case REAL:
+                x = new Constant(look, Type.floatWord);
+                move();
+                return x;
+            case STRING:
+                x = new Constant(look, Type.stringWord);
+                move();
+                return x;
+            case LPAREN:
+                match(Tag.LPAREN);
+                x = expr();
+                match(Tag.RPAREN);
+                return x;
+            default:
+                if (look instanceof Word) {
+                    x = new Id((Word) look, Type.intWord, 0);
+                    move();
+                    return x;
+                }
+                error("Fator inválido: " + look);
+                return null;
         }
     }
 
-    private void forComando() throws IOException {
-        matchWord("for");
-        match(Tag.LPAREN);
-        if (!(look.tag == Tag.SEMICOLON)) {
-            expr();
-        }
-        match(Tag.SEMICOLON);
-        if (!(look.tag == Tag.SEMICOLON)) expr();
-        match(Tag.SEMICOLON);
-        if (!(look.tag == Tag.RPAREN)) expr();
-        match(Tag.RPAREN);
-        if (look.tag == Tag.LBRACE) {
-            match(Tag.LBRACE); bloco(); match(Tag.RBRACE);
-        } else comando();
-    }
+    // =====================================================
+    // MAIN
+    // =====================================================
 
-    private void mainDecl() throws IOException {
+    private Stmt mainDecl() throws IOException {
         matchWord("main");
         match(Tag.LPAREN);
         match(Tag.RPAREN);
         match(Tag.LBRACE);
-        corpoMetodo();
+        Stmt corpo = corpoMetodo();
         match(Tag.RBRACE);
+        return corpo;
     }
 
-    public void parse() throws IOException {
-        programa();
+    // =====================================================
+    // EXECUÇÃO
+    // =====================================================
+
+    public Stmt parse() throws IOException {
+        Stmt prog = programa();
         if (look.tag != Tag.EOF) {
             error("Tokens extras após fim do programa");
         }
         System.out.println("Análise sintática concluída com sucesso.");
+        return prog; // retorna a AST raiz
     }
 }
