@@ -87,6 +87,7 @@ public class Lexer {
 
         // 🔹 Comentário
         reserve(Word.commentWord);
+        reserve(Word.extendsWord);
     }
 
     void reserve(Word w) {
@@ -118,13 +119,16 @@ public class Lexer {
                 readch();
             }
 
-            if (peek == '\n') { // linha vazia → ignora
-                readch();
+            // Se a linha for vazia, ignora
+            if (peek == '\n') {
                 line++;
+                readch();
                 return scan();
             }
 
             int prevIndent = indentStack.peek();
+
+            // Gera tokens de indentação apenas quando muda o nível
             if (indentCount > prevIndent) {
                 indentStack.push(indentCount);
                 pendingTokens.add(new Token(Tag.INDENT));
