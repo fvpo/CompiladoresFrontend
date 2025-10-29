@@ -127,5 +127,6 @@ public class Word extends Token {
     numWord     = new Word("<NUM>", Tag.NUM),
             realWord    = new Word("<REAL>", Tag.REAL),
             textWord    = new Word("<TEXT>", Tag.TEXT),
-            idWord      = new Word("<ID>", Tag.ID);
+            idWord      = new Word("<ID>", Tag.ID),
+            extendsWord = new Word("<extends>", Tag.EXTENDS);
 }
