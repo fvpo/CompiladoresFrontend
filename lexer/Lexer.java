@@ -1,7 +1,6 @@
 package lexer;
 
 import symbols.Type;
-
 import java.io.*;
 import java.util.*;
 
@@ -228,7 +227,6 @@ public class Lexer {
             String s = b.toString();
             Word w = words.get(s);
             if (w != null) return w;
-
             w = new Word(s, Tag.ID);
             words.put(s, w);
             return w;
