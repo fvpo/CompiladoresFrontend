@@ -27,7 +27,7 @@ public class Env {
         }
     }
 
-    public static boolean containsInCurrent(String name) {
+    public boolean containsInCurrent(String name) {
         return table.containsKey(name);
     }
 }
