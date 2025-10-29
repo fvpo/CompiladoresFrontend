@@ -50,6 +50,8 @@ public class Parser {
         while (look.tag != Tag.EOF) {
             if (isWord("def")) {
                 stmts.add(decFuncao());
+            } else if (isWord("class")) {
+                stmts.add(declClasse());
             } else {
                 stmts.add(comando());
             }
@@ -121,12 +123,17 @@ public class Parser {
     }
 
     private Stmt comando() throws IOException {
-        // Ignora tokens de indentação no topo
+        // Ignora tokens de indentação e NEWLINE
         while (look.tag == Tag.INDENT || look.tag == Tag.DEDENT || look.tag == Tag.NEWLINE) {
             move();
         }
 
         if (look.tag == Tag.EOF) return null;
+
+        // Se encontrou '}', significa fim de bloco
+        if (look.tag == Tag.RBRACE) {
+            return null; // bloco() vai tratar o match(RBRACE)
+        }
 
         if (isWord("print")) {
             return printComando();
@@ -166,6 +173,7 @@ public class Parser {
         match(Tag.LPAREN);
         Expr cond = expr();
         match(Tag.RPAREN);
+
         Stmt thenStmt;
         if (look.tag == Tag.LBRACE) {
             match(Tag.LBRACE);
@@ -176,8 +184,13 @@ public class Parser {
         }
 
         Stmt elseStmt = null;
+
+        while (look.tag == Tag.NEWLINE || look.tag == Tag.INDENT || look.tag == Tag.DEDENT) {
+            move();
+        }
+
         if (isWord("else")) {
-            matchWord("else");
+            matchWord("else"); // consome o 'else'
             if (look.tag == Tag.LBRACE) {
                 match(Tag.LBRACE);
                 elseStmt = bloco();
@@ -195,6 +208,31 @@ public class Parser {
     // =====================================================
 
     private Expr expr() throws IOException {
+        return rel();
+    }
+
+    // =====================================================
+// EXPRESSÕES RELACIONAIS
+// =====================================================
+    private Expr rel() throws IOException {
+        Expr left = arith();
+
+        while (look.tag == Tag.LT || look.tag == Tag.GT ||
+                look.tag == Tag.LE || look.tag == Tag.GE ||
+                look.tag == Tag.EQ || look.tag == Tag.NE) {
+            Token op = look;
+            move();
+            Expr right = arith();
+            left = new Rel(op, left, right); // nova classe que você cria (semelhante à Arith)
+        }
+
+        return left;
+    }
+
+    // =====================================================
+// EXPRESSÕES ARITMÉTICAS
+// =====================================================
+    private Expr arith() throws IOException {
         Expr left = term();
         while (look.tag == Tag.PLUS || look.tag == Tag.MINUS) {
             Token op = look;
@@ -219,18 +257,26 @@ public class Parser {
     private Expr factor() throws IOException {
         Expr x;
         switch (look.tag) {
-            case NUM:
-                x = new Constant(look, Type.intWord);
+            case NUM: {
+                // look é um Num token (classe Num extends Token { public final int value; })
+                Num numTok = (Num) look;
+                x = Constant.fromInt(numTok.value);
                 move();
                 return x;
-            case REAL:
-                x = new Constant(look, Type.floatWord);
+            }
+            case REAL: {
+                Real realTok = (Real) look;
+                x = Constant.fromDouble(realTok.value);
                 move();
                 return x;
-            case TEXT:
-                x = new Text(((Word) look).lexeme);
+            }
+            case TEXT: {
+                // Se você criou token Word com Tag.TEXT e lexeme contendo o texto
+                String s = ((Word) look).lexeme;
+                x = Constant.fromString(s);
                 move();
                 return x;
+            }
             case LPAREN:
                 match(Tag.LPAREN);
                 x = expr();
