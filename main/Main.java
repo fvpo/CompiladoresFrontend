@@ -2,6 +2,9 @@ package main;
 
 import lexer.*;
 import parser.*;
+import inter.*;
+import symbols.Env;
+
 import java.io.*;
 
 class Main {
@@ -14,8 +17,15 @@ class Main {
         try (Reader reader = new FileReader(args[0])) {
             Lexer lex = new Lexer(reader);
             Parser parser = new Parser(lex);
-            parser.programa();
-            System.out.write('\n');
+
+            // Cria a AST
+            Stmt programa = parser.parse();
+
+            // Cria o ambiente
+            Env env = new Env(null);
+
+            // Executa o programa
+            programa.exec(env);
         }
     }
 }
