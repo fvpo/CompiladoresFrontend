@@ -13,7 +13,7 @@ public class Assign extends Stmt {
 
     @Override
     public void exec(Env env) {
-        Object val = expr.eval(env);
+        Object val = expr.eval();
         env.setValue(id.toString(), val);
     }
 }
