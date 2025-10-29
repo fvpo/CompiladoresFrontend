@@ -45,18 +45,16 @@ public class Parser {
     public Stmt programa() throws IOException {
         List<Stmt> stmts = new ArrayList<>();
 
+        // Lê instruções e declarações na ordem em que aparecem, até o EOF
         while (look.tag != Tag.EOF) {
             if (isWord("def")) {
                 stmts.add(decFuncao());
-            } else if (isWord("main")) {
-                stmts.add(mainDecl());
-                break;
             } else {
-                error("Esperado 'def' ou 'main' no início do programa");
+                stmts.add(comando());
             }
         }
 
-        return new Seq(stmts);
+        return new Seq(stmts); // programa = sequência de comandos top-level
     }
 
     private Stmt decFuncao() throws IOException {
@@ -145,6 +143,13 @@ public class Parser {
     // =====================================================
 
     private Stmt comando() throws IOException {
+        // Ignora tokens de indentação no topo
+        while (look.tag == Tag.INDENT || look.tag == Tag.DEDENT || look.tag == Tag.NEWLINE) {
+            move();
+        }
+
+        if (look.tag == Tag.EOF) return null;
+
         if (isWord("print")) {
             return printComando();
         } else if (isWord("if")) {
@@ -247,8 +252,8 @@ public class Parser {
                 x = new Constant(look, Type.floatWord);
                 move();
                 return x;
-            case STRING:
-                x = new Constant(look, Type.stringWord);
+            case TEXT:
+                x = new Text(((Word) look).lexeme);
                 move();
                 return x;
             case LPAREN:
