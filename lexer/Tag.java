@@ -5,6 +5,7 @@ public enum Tag {
     // 🔹 Fim de arquivo e erros
     EOF,            // fim do código-fonte
     UNKNOWN,        // token inválido
+    EXTENDS,
 
     // 🔹 Estruturas de definição
     CLASS,          // 'class'
