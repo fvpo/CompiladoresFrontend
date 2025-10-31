@@ -12,12 +12,15 @@ public class Receive extends Stmt {
     }
 
     @Override
+    public void exec() {
+        throw new UnsupportedOperationException("Use exec(Env env) instead.");
+    }
     public void exec(Env env) {
         Object ch = env.getValue(channel.toString());
         if (!(ch instanceof CChannel)) {
             throw new RuntimeException("Variável não é um canal: " + channel);
         }
         Object value = ((CChannel) ch).receive();
-        env.setValue(target.toString(), value);
+        env.put(target.toString(), value);
     }
 }

@@ -20,11 +20,11 @@ public class Arith extends Op {
         Object v2 = expr2.eval();
 
         switch (op.tag) {
-            case Tag.PLUS:  return ((Number)v1).doubleValue() + ((Number)v2).doubleValue();
-            case Tag.MINUS: return ((Number)v1).doubleValue() - ((Number)v2).doubleValue();
-            case Tag.MULT:  return ((Number)v1).doubleValue() * ((Number)v2).doubleValue();
-            case Tag.DIV:   return ((Number)v1).doubleValue() / ((Number)v2).doubleValue();
-            case Tag.MOD:   return ((Number)v1).doubleValue() % ((Number)v2).doubleValue();
+            case PLUS:  return ((Number)v1).doubleValue() + ((Number)v2).doubleValue();
+            case MINUS: return ((Number)v1).doubleValue() - ((Number)v2).doubleValue();
+            case MULT:  return ((Number)v1).doubleValue() * ((Number)v2).doubleValue();
+            case DIV:   return ((Number)v1).doubleValue() / ((Number)v2).doubleValue();
+            case MOD:   return ((Number)v1).doubleValue() % ((Number)v2).doubleValue();
             default:
                 error("unknown arithmetic operator: " + op);
                 return null;
