@@ -39,11 +39,10 @@ public class Parser {
     }
 
     // =====================================================
-    //  INÍCIO DO PARSEADOR
+    // INÍCIO DO PARSEADOR
     // =====================================================
 
     public Stmt programa() throws IOException {
-        // Gera o corpo principal do programa (funções ou main)
         List<Stmt> stmts = new ArrayList<>();
 
         // Lê instruções e declarações na ordem em que aparecem, até o EOF
@@ -57,7 +56,7 @@ public class Parser {
             }
         }
 
-        return new Seq(stmts); // programa = sequência de declarações
+        return new Seq(stmts); // programa = sequência de comandos top-level
     }
 
     private Stmt decFuncao() throws IOException {
@@ -69,7 +68,7 @@ public class Parser {
         match(Tag.LBRACE);
         Stmt corpo = corpoMetodo();
         match(Tag.RBRACE);
-        return corpo; // poderia ser FunctionDecl se você quiser modelar funções
+        return corpo;
     }
 
     private String nomeMetodo() throws IOException {
@@ -81,6 +80,32 @@ public class Parser {
             error("Esperado identificador (nome do método)");
             return null;
         }
+    }
+
+    private boolean isTipo() {
+        return isWord("int") || isWord("float") || isWord("string") || isWord("void") || isWord("c_channel");
+    }
+
+    private Stmt declVariavel() throws IOException {
+        String tipoStr = ((Word) look).lexeme;
+        move();  // consome o tipo
+
+        if (!(look instanceof Word)) {
+            error("Esperado identificador após tipo");
+        }
+        Word idWord = (Word) look;
+        move(); // consome o nome da variável
+
+        Expr init = null;
+        if (look.tag == Tag.ASSIGN) {
+            match(Tag.ASSIGN);
+            init = expr();
+        }
+
+        if (look.tag == Tag.SEMICOLON) match(Tag.SEMICOLON);
+
+        Id id = new Id(idWord, Type.intWord, 0); // ou mapear para o tipo correto
+        return new Decl(id, init);  // Decl é uma nova classe que você cria em inter
     }
 
     private void listaParametros() throws IOException {
@@ -99,12 +124,12 @@ public class Parser {
     }
 
     private void tipo() throws IOException {
-        if (isWord("void") || isWord("int") || isWord("float") || isWord("String")) {
+        if (isWord("void") || isWord("int") || isWord("float") || isWord("String") || isWord("c_channel")) {
             move();
         } else if (look instanceof Word) {
             move();
         } else {
-            error("Esperado tipo (void,int,float,String ou identificador)");
+            error("Esperado tipo (void,int,float,String,c_channel ou identificador)");
         }
     }
 
@@ -114,13 +139,71 @@ public class Parser {
 
     private Stmt bloco() throws IOException {
         List<Stmt> stmts = new ArrayList<>();
-
         while (look.tag != Tag.RBRACE && look.tag != Tag.EOF) {
             stmts.add(comando());
         }
-
         return new Seq(stmts);
     }
+
+    private Stmt declClasse() throws IOException {
+        matchWord("class");               // consome 'class'
+        String nome = nomeClasse();       // lê o identificador da classe
+
+        String superNome = null;
+        if (isWord("extends")) {          // consome 'extends' se houver
+            matchWord("extends");
+            superNome = nomeClasse();
+        }
+
+        match(Tag.LBRACE);                // abre corpo da classe
+        List<Stmt> membros = new ArrayList<>();
+        while (look.tag != Tag.RBRACE && look.tag != Tag.EOF) {
+            if (isWord("def")) {
+                membros.add(decFuncao());
+            } else {
+                membros.add(comando());
+            }
+        }
+        match(Tag.RBRACE);                // fecha corpo da classe
+
+        return new ClassDecl(nome, superNome, membros); // ClassDecl deve existir em inter
+    }
+
+    private String nomeClasse() throws IOException {
+        if (look instanceof Word) {
+            String s = ((Word) look).lexeme;
+            move();
+            return s;
+        } else {
+            error("Esperado identificador (nome da classe)");
+            return null;
+        }
+    }
+
+    // =====================================================
+    // SEQ / PAR (blocos por indentação)
+    // =====================================================
+
+    private Stmt blocoSeqPar() throws IOException {
+        boolean isSeq = isWord("seq");
+        move(); // consome 'seq' ou 'par'
+
+        match(Tag.INDENT);
+
+        List<Stmt> stmts = new ArrayList<>();
+
+        while (look.tag != Tag.DEDENT && look.tag != Tag.EOF) {
+            stmts.add(comando());
+        }
+
+        match(Tag.DEDENT);
+
+        return isSeq ? new Seq(stmts) : new Par(stmts);
+    }
+
+    // =====================================================
+    // COMANDOS
+    // =====================================================
 
     private Stmt comando() throws IOException {
         // Ignora tokens de indentação e NEWLINE
@@ -135,14 +218,21 @@ public class Parser {
             return null; // bloco() vai tratar o match(RBRACE)
         }
 
+        // Declaração de variável
+        if (isTipo()) {  // método helper que verifica se o token atual é um tipo
+            return declVariavel();
+        }
+
         if (isWord("print")) {
             return printComando();
         } else if (isWord("if")) {
             return ifComando();
+        } else if (isWord("seq") || isWord("par")) {
+            return blocoSeqPar();
         } else if (look instanceof Word) {
-            // atribuição ou chamada
             Word idword = (Word) look;
             move();
+
             if (look.tag == Tag.ASSIGN) {
                 match(Tag.ASSIGN);
                 Expr e = expr();
@@ -256,6 +346,7 @@ public class Parser {
 
     private Expr factor() throws IOException {
         Expr x;
+
         switch (look.tag) {
             case NUM: {
                 // look é um Num token (classe Num extends Token { public final int value; })
@@ -283,11 +374,36 @@ public class Parser {
                 match(Tag.RPAREN);
                 return x;
             default:
+                // Aqui tratamos o NEW e c_channel
+                if (isWord("new")) {
+                    move(); // consome 'new'
+
+                    if (!(look instanceof Word))
+                        error("Esperado nome da classe após 'new'");
+
+                    String className = ((Word) look).lexeme;
+                    move();
+
+                    match(Tag.LPAREN);
+                    List<Expr> args = new ArrayList<>();
+                    if (look.tag != Tag.RPAREN) {
+                        args.add(expr());
+                        while (look.tag == Tag.COMMA) {
+                            match(Tag.COMMA);
+                            args.add(expr());
+                        }
+                    }
+                    match(Tag.RPAREN);
+
+                    return new New(className, args);
+                }
+
                 if (look instanceof Word) {
                     x = new Id((Word) look, Type.intWord, 0);
                     move();
                     return x;
                 }
+
                 error("Fator inválido: " + look);
                 return null;
         }
@@ -317,6 +433,6 @@ public class Parser {
             error("Tokens extras após fim do programa");
         }
         System.out.println("Análise sintática concluída com sucesso.");
-        return prog; // retorna a AST raiz
+        return prog;
     }
 }
