@@ -17,6 +17,9 @@ public class Decl extends Stmt {
     }
 
     @Override
+    public void exec() {
+        // No-op for basic Decl; override in subclasses if needed
+    }
     public void exec(Env env) {
         env.put(id.toString(), this);
     }
