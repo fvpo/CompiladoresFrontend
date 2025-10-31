@@ -15,6 +15,9 @@ public class ClassDecl extends Stmt {
     }
 
     @Override
+    public void exec() {
+        throw new UnsupportedOperationException("Use exec(Env env) instead.");
+    }
     public void exec(Env env) {
         env.put(name, this);
     }
