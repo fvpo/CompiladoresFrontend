@@ -124,9 +124,9 @@ public class Word extends Token {
     // ==============================
     // 🔸 Literais e identificadores genéricos
     // ==============================
-    numWord     = new Word("<NUM>", Tag.NUM),
+            numWord     = new Word("<NUM>", Tag.NUM),
             realWord    = new Word("<REAL>", Tag.REAL),
             textWord    = new Word("<TEXT>", Tag.TEXT),
             idWord      = new Word("<ID>", Tag.ID),
-            extendsWord = new Word("<extends>", Tag.EXTENDS);
+            extendsWord = new Word("extends", Tag.EXTENDS);
 }

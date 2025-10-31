@@ -10,10 +10,8 @@ public class Send extends Stmt {
         this.channel = channel;
         this.expr = expr;
     }
+
     @Override
-    public void exec() {
-        throw new UnsupportedOperationException("Use exec(Env env) instead.");
-    }
     public void exec(Env env) {
         Object ch = env.getValue(channel.toString());
         if (!(ch instanceof CChannel)) {

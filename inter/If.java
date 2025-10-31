@@ -1,5 +1,7 @@
 package inter;
 
+import symbols.Env;
+
 public class If extends Stmt {
     private final Expr cond;
     private final Stmt thenStmt, elseStmt;
@@ -9,12 +11,12 @@ public class If extends Stmt {
     }
 
     @Override
-    public void exec() {
+    public void exec(Env env) {
         Object c = cond.eval();
         if (!(c instanceof Boolean)) {
             error("condição do if deve ser booleana");
         }
-        if ((Boolean) c) thenStmt.exec();
-        else if (elseStmt != null) elseStmt.exec();
+        if ((Boolean) c) thenStmt.exec(env);
+        else if (elseStmt != null) elseStmt.exec(env);
     }
 }

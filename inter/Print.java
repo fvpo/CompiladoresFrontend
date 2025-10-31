@@ -1,5 +1,7 @@
 package inter;
 
+import symbols.Env;
+
 public class Print extends Stmt {
     private final Expr expr;
 
@@ -8,7 +10,7 @@ public class Print extends Stmt {
     }
 
     @Override
-    public void exec() {
+    public void exec(Env env) {
         Object val = expr.eval();
         System.out.println(val);
     }

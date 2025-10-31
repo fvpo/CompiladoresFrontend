@@ -1,5 +1,7 @@
 package inter;
 
+import symbols.*;
+
 public class Assign extends Stmt {
     private final Id id;
     private final Expr expr;
@@ -10,8 +12,8 @@ public class Assign extends Stmt {
     }
 
     @Override
-    public void exec() {
+    public void exec(Env env) {
         Object val = expr.eval();
-        id.assign(val);
+        env.setValue(id.toString(), val);
     }
 }

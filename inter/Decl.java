@@ -1,12 +1,7 @@
 package inter;
 
-import lexer.*;
-import symbols.*;
+import symbols.Env;
 
-/**
- * Represents a variable declaration with an identifier and an optional initializer expression.
- * Minimal implementation so Parser can construct Decl nodes; extend with code generation / semantic checks as needed.
- */
 public class Decl extends Stmt {
     public final Id id;
     public final Expr init;
@@ -17,17 +12,8 @@ public class Decl extends Stmt {
     }
 
     @Override
-    public void exec() {
-        // No-op for basic Decl; override in subclasses if needed
-    }
     public void exec(Env env) {
-        env.put(id.toString(), this);
+        Object value = (init != null) ? init.eval() : null;
+        env.put(id.getName(), value); // assume que Env tem método put para registrar variáveis
     }
-    public String toString() {
-        if (init != null) {
-            return id.toString() + " = " + init.toString();
-        } else {
-            return id.toString();
-        }
-    } 
 }

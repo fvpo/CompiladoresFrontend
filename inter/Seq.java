@@ -1,5 +1,7 @@
 package inter;
 
+import symbols.Env;
+
 import java.util.List;
 
 public class Seq extends Stmt {
@@ -10,9 +12,9 @@ public class Seq extends Stmt {
     }
 
     @Override
-    public void exec() {
+    public void exec(Env env) {
         for (Stmt s : stmts) {
-            if (s != null) s.exec();
+            if (s != null) s.exec(env);
         }
     }
 }
