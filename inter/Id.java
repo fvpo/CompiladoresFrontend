@@ -23,7 +23,7 @@ public class Id extends Expr {
     // Avalia o valor da variável no ambiente de execução
     @Override
     public Object eval() {
-        Object val = Env.get(getName());
+        Object val = symbols.Env.getStatic(getName());
         if (val == null) {
             error("Variável não declarada: " + getName());
         }
@@ -32,7 +32,7 @@ public class Id extends Expr {
 
     // Define um novo valor para a variável (usado em atribuições)
     public void assign(Object value) {
-        Env.put(getName(), value);
+        symbols.Env.putStatic(getName(), value);
     }
 
     // Verifica se este identificador é um array

@@ -18,7 +18,15 @@ public class Par extends Stmt {
 
         for (Stmt s : stmts) {
             if (s != null) {
-                Thread t = new Thread(() -> s.exec(env));
+                Thread t = new Thread(() -> {
+                    // bind the provided env as the current thread-local env for this thread
+                    env.bindCurrent();
+                    try {
+                        s.exec(env);
+                    } finally {
+                        env.unbindCurrent();
+                    }
+                });
                 threads.add(t);
                 t.start();
             }

@@ -24,6 +24,6 @@ public class MethodDecl extends Stmt {
     @Override
     public void exec(Env env) {
         // When a method is declared at top-level (if allowed), register it by name
-        Env.put(name, this);
+        symbols.Env.putStatic(name, this);
     }
 }

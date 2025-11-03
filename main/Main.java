@@ -41,9 +41,14 @@ class Main {
 
             // Cria o ambiente
             Env env = new Env(null);
-
-            // Executa o programa
-            programa.exec(env);
+            // bind this env as the current thread-local environment so static lookups work
+            env.bindCurrent();
+            try {
+                // Executa o programa
+                programa.exec(env);
+            } finally {
+                env.unbindCurrent();
+            }
         }
     }
 }

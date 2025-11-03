@@ -1,0 +1,20 @@
+class Worker{
+    def run(String id){
+        for(int i = 0; i < 10; i++){
+            print(id);
+            print(i);
+            int delay = 0;
+            for(int k = 0; k < 200000; k++){
+                delay = delay + k; # simple busy work to create a small delay (no modulo operator)
+            }
+        }
+    }
+}
+
+Worker a = new Worker();
+Worker b = new Worker();
+
+par{
+    a.run("A");
+    b.run("B");
+}

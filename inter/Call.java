@@ -1,8 +1,6 @@
 package inter;
 
 import java.util.List;
-import symbols.Env;
-import inter.ReturnException;
 
 /**
  * Method call expression: target.method(args...)
@@ -40,35 +38,39 @@ public class Call extends Expr {
                     // bind 'this' and parameters (save old values to restore later)
                     java.util.Map<String, Object> old = new java.util.HashMap<>();
 
-                    // save old 'this'
-                    old.put("this", Env.get("this"));
-                    Env.put("this", inst);
+                    // create a local env for the method and bind it as current for this thread
+                    symbols.Env localEnv = new symbols.Env(null);
+                    // save old values from whichever env is current
+                    old.put("this", symbols.Env.getStatic("this"));
+                    for (String pname : m.params) {
+                        old.put(pname, symbols.Env.getStatic(pname));
+                    }
 
-                    // bind parameters by name
+                    // bind local env to thread and populate parameters/this into it
+                    localEnv.bindCurrent();
+                    symbols.Env.putStatic("this", inst);
                     for (int i = 0; i < m.params.size(); i++) {
                         String pname = m.params.get(i);
-                        Object pval = null;
-                        if (i < args.size()) {
-                            pval = args.get(i).eval();
-                        }
-                        old.put(pname, Env.get(pname));
-                        Env.put(pname, pval);
+                        Object pval = (i < args.size()) ? args.get(i).eval() : null;
+                        symbols.Env.putStatic(pname, pval);
                     }
 
                     // execute the method body and catch ReturnException to obtain return value
                     Object ret = null;
                     try {
                         try {
-                            m.body.exec(new Env(null));
+                            m.body.exec(localEnv);
                         } catch (ReturnException rex) {
                             ret = rex.getValue();
                         }
                     } finally {
                         // restore old parameter values and 'this'
                         for (String pname : m.params) {
-                            Env.put(pname, old.get(pname));
+                            symbols.Env.putStatic(pname, old.get(pname));
                         }
-                        Env.put("this", old.get("this"));
+                        symbols.Env.putStatic("this", old.get("this"));
+                        // unbind the local env from the current thread
+                        localEnv.unbindCurrent();
                     }
                     return ret;
                 }

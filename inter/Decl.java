@@ -54,8 +54,8 @@ public class Decl extends Stmt {
             }
         }
         
-        Env.put(id.getName(), value);
+    symbols.Env.putStatic(id.getName(), value);
 
-        env.put(id.getName(), value);
+    env.put(id.getName(), value);
     }
 }

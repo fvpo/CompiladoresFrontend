@@ -30,8 +30,8 @@ public class New extends Expr {
             return new CChannel();
         }
         
-        // For classes, look up class declaration and create instance
-        Object clsObj = Env.get(className);
+    // For classes, look up class declaration and create instance
+    Object clsObj = symbols.Env.getStatic(className);
 
         if (clsObj instanceof ClassDecl cd) {
             // cria a instância da classe
@@ -52,21 +52,35 @@ public class New extends Expr {
             MethodDecl constructor = cd.getConstructor();
             if (constructor != null) {
                 // cria um ambiente local para a execução do construtor
-                Env localEnv = new Env(null);
-                localEnv.put("this", instance);
+                java.util.Map<String, Object> old = new java.util.HashMap<>();
+                symbols.Env localEnv = new symbols.Env(null);
 
-                // define 'this' no ambiente para referenciar a instância
-                Env.put("this", instance);
+                // save old 'this' and parameter values
+                old.put("this", symbols.Env.getStatic("this"));
+                for (String pname : constructor.params) {
+                    old.put(pname, symbols.Env.getStatic(pname));
+                }
 
-                // avalia os argumentos e atribui aos parâmetros do construtor
+                // bind the local env and populate 'this' and params
+                localEnv.bindCurrent();
+                symbols.Env.putStatic("this", instance);
                 for (int i = 0; i < constructor.params.size(); i++) {
                     String paramName = constructor.params.get(i);
                     Object argValue = (i < args.size()) ? args.get(i).eval() : null;
-                    localEnv.put(paramName, argValue);
+                    symbols.Env.putStatic(paramName, argValue);
                 }
 
                 // executa o corpo do construtor
-                constructor.body.exec(localEnv);
+                try {
+                    constructor.body.exec(localEnv);
+                } finally {
+                    // restore old values and unbind
+                    for (String pname : constructor.params) {
+                        symbols.Env.putStatic(pname, old.get(pname));
+                    }
+                    symbols.Env.putStatic("this", old.get("this"));
+                    localEnv.unbindCurrent();
+                }
             }
 
             return instance;
