@@ -20,8 +20,9 @@ public class Type extends Word{
             intWord     = new Type("int", Tag.BASIC, 4),
             boolWord     = new Type("bool", Tag.BASIC, 1),
             floatWord   = new Type("float", Tag.BASIC, 8),
-            charWord = new Type("char", Tag.BASIC, 1),
-            stringWord  = new Type("string", Tag.STRING);
+            charWord    = new Type("char", Tag.BASIC, 1),
+            stringWord  = new Type("string", Tag.STRING),
+            cchannelWord = new Type("c_channel", Tag.BASIC, 4);
 
     public static boolean numeric(Type p) {
         return (p == Type.charWord || p == Type.intWord || p == Type.floatWord);

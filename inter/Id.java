@@ -4,13 +4,14 @@ import lexer.*;
 import symbols.*;
 
 public class Id extends Expr {
-    public int offset; // ainda pode existir se quiser manter compatibilidade com código do livro
+    public int offset;   // compatibilidade com o livro
+    public Type type;    // tipo do identificador (pode ser primitivo ou Array)
 
     public Id(Word id, Type p, int b) {
         super(id, p);
-        offset = b;
+        this.type = p;
+        this.offset = b;
     }
-
     // Retorna o nome da variável
     public String getName() {
         return ((Word) op).lexeme;
@@ -31,8 +32,31 @@ public class Id extends Expr {
         Env.put(getName(), value);
     }
 
+    // Verifica se este identificador é um array
+    public boolean isArray() {
+        return type instanceof Array;
+    }
+
+    // Retorna o tipo array, se for
+    public Array asArray() {
+        if (isArray()) {
+            return (Array) type;
+        }
+        throw new IllegalStateException("Identificador não é um array: " + getName());
+    }
+
     @Override
     public String toString() {
-        return getName();
+        if (isArray()) {
+            Array arr = (Array) type;
+            return "Id(nome=" + getName() +
+                   ", tipoBase=" + arr.of +
+                   ", tamanho=" + arr.size +
+                   ", offset=" + offset + ")";
+        } else {
+            return "Id(nome=" + getName() +
+                   ", tipo=" + type +
+                   ", offset=" + offset + ")";
+        }
     }
 }

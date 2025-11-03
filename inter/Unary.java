@@ -15,14 +15,14 @@ public class Unary extends Op {
         Object val = expr.eval();
 
         switch (op.tag) {
-            case Tag.MINUS:  // operador unário negativo
+            case MINUS:  // operador unário negativo
                 if (!(val instanceof Number)) {
                     error("operand must be numeric");
                     return null;
                 }
                 return -((Number) val).doubleValue();
 
-            case Tag.NOT:    // operador lógico NOT
+            case NOT:    // operador lógico NOT
                 if (!(val instanceof Boolean)) {
                     error("operand must be boolean");
                     return null;

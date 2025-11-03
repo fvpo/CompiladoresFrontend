@@ -1,0 +1,54 @@
+	<classe> ::= 'class' <nome_classe> '{' <lista_membros> '}'
+	<expressao_objeto> ::= 'new' <nome_classe> '(' <lista_argumentos> ')'
+	<membro> ::= <declaracao_atributo> | <declaracao_metodo>
+	<instanciacao>::= <nome_objeto> "=" "new" <nome_classe> "("  ")" ";" 
+	<chamada_metodo> ::= <nome_objeto> '.' <nome_metodo> '(' <lista_argumentos> ')'
+	<declaracao_metodo> ::= <tipo_retorno> <nome_metodo> '(' <lista_parametros> ')' '{' <corpo_metodo> '}'
+	<chamada_func> ::= <nome_func> "(" <lista_argumento> ")"
+	<declaracao_func> ::= <tipo_retorno> <nome_func> '(' <lista_parametros> ')' '{' <corpo_func> '}'
+	
+	<lista_membros> ::= <membro> | <membro> <lista_membros>
+	<lista_parametros> ::= | <parametro> | <parametro> ',' <lista_parametros>
+	<lista_argumentos> ::= | <argumento> | <argumento> ',' <lista_argumentos>
+	
+	<nome_metodo> ::= <identificador>
+	<nome_classe> ::= <identificador>
+	<nome_metodo> ::= <identificador>
+	<nome_objeto> ::= <identificador>
+	
+	<corpo_metodo> ::= <bloco>
+	<tipo_retorno> ::= <tipo>
+	
+	<bloco_PAR>::= 'PAR' <line_break> <bloco_identado>
+	<bloco_SEQ>::= 'SEQ' <line_break> <bloco_identado>
+	<code_block_idented>::= "    " <bloco>
+	<bloco>::=  <dec_variavel> | <comando> |  <dec_variavel> <bloco> |<comando> <bloco>
+	<dec_variavel>::= <identificador> "=" <expr>
+	
+	
+	<comando> ::= <instanciacao> | <chamada_metodo> | <chamada_func> | <print_comando> |
+                 <for_comando> | <if_comando> | <while_comando> | <send_comando> | <receive_comando>
+	<canal_expr> ::= <identificador> | <expressao_objeto>
+	<send_comando> ::= "send" "(" <expr> "," <canal_expr> ")" ";" 
+	<receive_comando> ::= <identificador> "=" "receive" "(" <canal_expr> ["," <receive_opts>] ")" ";"
+	<receive_opts> ::= <numero>
+	<if_comando> ::= "if" "(" <expr> ")" ":" <bloco_identado>
+	<else_comando> ::= <if_comando> "else:" <bloco_identado> | <if_comando> "else" <if_comando>
+	<for_comando> ::= "for" "(" <dec_variavel> "in" <identificador> ")" ":" <bloco_identado>
+	<while_comando> ::= "while" "(" expr ")" ":" <bloco_identado> 
+	
+	<expr> ::= <op_log> | <op_ari>
+	<op_log> ::= <op_ari> "==" <op_ari> | <op_ari> ">=" <op_ari> | <op_ari> "<=" <op_ari> | <op_ari> ">" <op_ari> | <op_ari> ">" <op_ari>
+	<op_ari> ::= <op_ari>  "+" <term> | <op_ari> "-" <term> | <term> 
+	<term> ::= <term> "/" <identificador> | <term> "*" <identificador> | <identificador> | <term> "/" <numero> | <term> "*" <numero> | <numero>
+
+
+	<texto> ::= '"' <sequencia_chars> '"' 
+	<identificador> ::= <letra> | <letra> <sequencia_chars>
+	<sequencia_chars>::= <caractere> | <caractere> <sequencia_chars>
+	<caractere> ::= <letra> | <numero>
+	<letra> ::= "A" | ... | "Z" | "a" | ... | "z" 
+	<numero>::= "0" | ... | "9"
+	<tipo>::= "void" | "int" | "float" | "String" | <identificador>
+
+	<comentario> ::= "#" <sequencia_chars>

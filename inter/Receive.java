@@ -13,11 +13,11 @@ public class Receive extends Stmt {
 
     @Override
     public void exec(Env env) {
-        Object ch = env.getValue(channel.toString());
+        Object ch = env.getValue(channel.getName());
         if (!(ch instanceof CChannel)) {
             throw new RuntimeException("Variável não é um canal: " + channel);
         }
         Object value = ((CChannel) ch).receive();
-        env.setValue(target.toString(), value);
+        env.setValue(target.getName(), value);
     }
 }

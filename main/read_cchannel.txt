@@ -1,0 +1,23 @@
+class Neuronio{
+  def Neuronio(input_val, output_desejado, peso_inicial=0.5,peso_bias_inicial=0.5, taxa_aprendizado=0.01){
+    this.input_val = input_val
+    this.output_desejado = output_desejado
+    this.peso = peso_inicial
+    this.bias = 1
+    this.peso_bias = peso_bias_inicial
+    this.taxa_aprendizado = taxa_aprendizado
+    this.erro = float('inf')
+    this.iteracao = 0
+  }
+  def ativacao(soma){
+    if(soma >= 0){
+      return 1
+    }
+    else{
+      return 0
+    }
+  }
+  def treinar(){
+    print("entrada: ")
+  }
+}

@@ -33,6 +33,7 @@ public class Word extends Token {
             continueWord= new Word("continue", Tag.CONTINUE),
             returnWord  = new Word("return", Tag.RETURN),
             printWord    = new Word("print", Tag.PRINT),
+            inputWord = new Word("input", Tag.INPUT),
 
     // ==============================
     // 🔸 Blocos de execução e concorrência
@@ -124,8 +125,9 @@ public class Word extends Token {
     // ==============================
     // 🔸 Literais e identificadores genéricos
     // ==============================
-    numWord     = new Word("<NUM>", Tag.NUM),
+            numWord     = new Word("<NUM>", Tag.NUM),
             realWord    = new Word("<REAL>", Tag.REAL),
             textWord    = new Word("<TEXT>", Tag.TEXT),
-            idWord      = new Word("<ID>", Tag.ID);
+            idWord      = new Word("<ID>", Tag.ID),
+            extendsWord = new Word("extends", Tag.EXTENDS);
 }

@@ -9,17 +9,35 @@ import java.io.*;
 
 class Main {
     public static void main(String[] args) throws IOException {
+        System.out.println("Diretório atual: " + System.getProperty("user.dir"));
+
+        boolean printAst = false;
+        String fileArg;
+
         if (args.length < 1) {
-            System.err.println("Uso: java main.Main <arquivo-fonte>");
+            System.err.println("Uso: java main.Main [--ast] <arquivo-fonte>");
             return;
         }
 
-        try (Reader reader = new FileReader(args[0])) {
+        if (args.length >= 2 && args[0].equals("--ast")) {
+            printAst = true;
+            fileArg = args[1];
+        } else {
+            fileArg = args[0];
+        }
+
+        try (Reader reader = new FileReader(fileArg)) {
             Lexer lex = new Lexer(reader);
             Parser parser = new Parser(lex);
 
             // Cria a AST
             Stmt programa = parser.parse();
+
+            if (printAst) {
+                System.out.println("--- AST ---");
+                ASTPrinter.print(programa);
+                System.out.println("--- END AST ---");
+            }
 
             // Cria o ambiente
             Env env = new Env(null);
