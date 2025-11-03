@@ -13,7 +13,7 @@ public class Send extends Stmt {
 
     @Override
     public void exec(Env env) {
-        Object ch = env.getValue(channel.toString());
+        Object ch = env.getValue(channel.getName());
         if (!(ch instanceof CChannel)) {
             throw new RuntimeException("Variável não é um canal: " + channel);
         }

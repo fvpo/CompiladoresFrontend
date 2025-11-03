@@ -1,11 +1,58 @@
-def add(x) {
-    return x + 1;
+class Neuronio{
+  float input_val = 0.0;
+  float output_desejado = 0.0;
+  float peso = 0.5;
+  float bias = 1.0;
+  float peso_bias = 0.5;
+  float taxa_aprendizado = 0.01;
+  float erro = 10000000.0;
+  float iteracao = 0;
+  def Neuronio(float input_val, float output_desejado, float peso_inicial, float peso_bias_inicial, float taxa_aprendizado){
+      this.input_val = input_val;
+      this.output_desejado = output_desejado;
+      this.peso = peso_inicial;
+      this.peso_bias = peso_bias_inicial;
+      this.taxa_aprendizado = taxa_aprendizado;
+    }
+    def treinar(){
+      print("entrada:");
+      print(this.input_val);
+      print("saida_desejada: ");
+      print(this.output_desejado);
+      while(this.erro != 0){
+        this.iteracao += 1;
+        if (this.iteracao >= 1000) { break; }
+        print("iteração: ");
+        print(this.iteracao);
+        print("Peso: ");
+        print(this.peso);
+        float soma = (this.input_val * this.peso) + (this.bias * this.peso_bias);
+        float saida = 0;
+        if (soma >= 0) {
+          saida = 1;
+        } else {
+          saida = 0;
+        }
+        print("Saída: ");
+        print(saida);
+        this.erro = this.output_desejado - saida;
+        print("Erro: ");
+        print(this.erro);
+        if (this.erro != 0){
+          this.peso += this.taxa_aprendizado * this.input_val * this.erro;
+          print("Peso do bias: ");
+          print(this.peso_bias);
+        }
+      }
+      this.peso_bias = this.peso_bias + this.taxa_aprendizado * this.bias * this.erro;
+      if (this.erro == 0) {
+        print("Parabéns! O neurônio aprendeu.");
+      } else {
+        print("Parabéns! O neurônio não convergiu dentro do limite de iterações.");
+      }
+      print("Valor desejado:");
+      print(this.output_desejado);
+    }
 }
-
-def mul(x) {
-    return x * 2;  
-}
-
-def calc(x) {
-    return add(x) + mul(x);  // This will now work!
-}
+Neuronio neuronio = new Neuronio(1, 0, 0.5, 0.5, 0.04);
+neuronio.treinar();

@@ -6,6 +6,7 @@ public enum Tag {
     EOF,            // fim do código-fonte
     UNKNOWN,        // token inválido
     EXTENDS,
+    INPUT,
 
     // 🔹 Estruturas de definição
     CLASS,          // 'class'

@@ -41,9 +41,4 @@ public class Env {
     public static boolean containsInCurrent(String name) {
         return table.containsKey(name);
     }
-
-    /** Remove a symbol from the global table (used to restore bindings after calls). */
-    public static void remove(String name) {
-        table.remove(name);
-    }
 }

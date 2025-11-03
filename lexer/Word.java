@@ -33,6 +33,7 @@ public class Word extends Token {
             continueWord= new Word("continue", Tag.CONTINUE),
             returnWord  = new Word("return", Tag.RETURN),
             printWord    = new Word("print", Tag.PRINT),
+            inputWord = new Word("input", Tag.INPUT),
 
     // ==============================
     // 🔸 Blocos de execução e concorrência

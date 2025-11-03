@@ -1,6 +1,8 @@
 package inter;
 
 import java.util.List;
+import symbols.Env;
+import inter.ReturnException;
 
 /**
  * Method call expression: target.method(args...)
@@ -20,44 +22,6 @@ public class Call extends Expr {
 
     @Override
     public Object eval() {
-        // Two modes: method call on an instance (target != null) or function call (target == null)
-        if (target == null) {
-            // function call: look up MethodDecl by name in the global Env
-            Object f = symbols.Env.get(methodName);
-            if (!(f instanceof MethodDecl)) {
-                throw new RuntimeException("Função não encontrada: " + methodName);
-            }
-            MethodDecl m = (MethodDecl) f;
-
-            // bind parameters in global Env temporarily
-            java.util.Map<String, Object> oldVals = new java.util.HashMap<>();
-            java.util.Set<String> added = new java.util.HashSet<>();
-            try {
-                if (m.params != null) {
-                    for (int i = 0; i < m.params.size(); i++) {
-                        String pname = m.params.get(i);
-                        Object pval = (args != null && i < args.size()) ? args.get(i).eval() : null;
-                        boolean existed = symbols.Env.containsInCurrent(pname);
-                        oldVals.put(pname, symbols.Env.get(pname));
-                        symbols.Env.put(pname, pval);
-                        if (!existed) added.add(pname);
-                    }
-                }
-                try {
-                    m.body.exec(new symbols.Env(null));
-                    return null;
-                } catch (ReturnException re) {
-                    return re.getValue();
-                }
-            } finally {
-                // restore old values
-                for (String n : oldVals.keySet()) {
-                    if (added.contains(n)) symbols.Env.remove(n);
-                    else symbols.Env.put(n, oldVals.get(n));
-                }
-            }
-        }
-
         Object obj = target.eval();
         if (!(obj instanceof ClassInstance)) {
             throw new RuntimeException("Chamada inválida: alvo não é uma instância de classe");
@@ -73,38 +37,40 @@ public class Call extends Expr {
             if (s instanceof MethodDecl) {
                 MethodDecl m = (MethodDecl) s;
                 if (m.name.equals(methodName)) {
-                    // bind 'this' and parameters in global Env temporarily
-                    java.util.Map<String, Object> oldVals = new java.util.HashMap<>();
-                    java.util.Set<String> added = new java.util.HashSet<>();
-                    try {
-                        boolean existedThis = symbols.Env.containsInCurrent("this");
-                        oldVals.put("this", symbols.Env.get("this"));
-                        symbols.Env.put("this", inst);
-                        if (!existedThis) added.add("this");
+                    // bind 'this' and parameters (save old values to restore later)
+                    java.util.Map<String, Object> old = new java.util.HashMap<>();
 
-                        if (m.params != null) {
-                            for (int i = 0; i < m.params.size(); i++) {
-                                String pname = m.params.get(i);
-                                Object pval = (args != null && i < args.size()) ? args.get(i).eval() : null;
-                                boolean existed = symbols.Env.containsInCurrent(pname);
-                                oldVals.put(pname, symbols.Env.get(pname));
-                                symbols.Env.put(pname, pval);
-                                if (!existed) added.add(pname);
-                            }
+                    // save old 'this'
+                    old.put("this", Env.get("this"));
+                    Env.put("this", inst);
+
+                    // bind parameters by name
+                    for (int i = 0; i < m.params.size(); i++) {
+                        String pname = m.params.get(i);
+                        Object pval = null;
+                        if (i < args.size()) {
+                            pval = args.get(i).eval();
                         }
+                        old.put(pname, Env.get(pname));
+                        Env.put(pname, pval);
+                    }
 
-                            try {
-                            m.body.exec(new symbols.Env(null));
-                            return null;
-                        } catch (ReturnException re) {
-                            return re.getValue();
+                    // execute the method body and catch ReturnException to obtain return value
+                    Object ret = null;
+                    try {
+                        try {
+                            m.body.exec(new Env(null));
+                        } catch (ReturnException rex) {
+                            ret = rex.getValue();
                         }
                     } finally {
-                        for (String n : oldVals.keySet()) {
-                            if (added.contains(n)) symbols.Env.remove(n);
-                            else symbols.Env.put(n, oldVals.get(n));
+                        // restore old parameter values and 'this'
+                        for (String pname : m.params) {
+                            Env.put(pname, old.get(pname));
                         }
+                        Env.put("this", old.get("this"));
                     }
+                    return ret;
                 }
             }
         }

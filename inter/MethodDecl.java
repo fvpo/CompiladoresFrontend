@@ -1,6 +1,7 @@
 package inter;
 
 import symbols.Env;
+import symbols.Type;
 import java.util.List;
 
 /**
@@ -11,11 +12,13 @@ public class MethodDecl extends Stmt {
     public final String name;
     public final List<String> params; // names of parameters (may be empty)
     public final Stmt body;
+    public final Type returnType;
 
-    public MethodDecl(String name, List<String> params, Stmt body) {
+    public MethodDecl(String name, List<String> params, Stmt body, Type returnType) {
         this.name = name;
         this.params = params;
         this.body = body;
+        this.returnType = returnType;
     }
 
     @Override

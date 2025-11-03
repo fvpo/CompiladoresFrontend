@@ -11,7 +11,8 @@ public class Arrays extends Type {
   size = sz;
   of = p;
   }
-
+  
+  @Override
   public String toString() {
     return "Array(" + size + ", " + of.toString() + ")";
   }

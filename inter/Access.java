@@ -8,7 +8,11 @@ public class Access extends Expr {
     public final String name;
 
     public Access(Expr target, String name) {
-        super(null, null);
+        // We cannot always statically determine the field type here during parsing.
+        // Use a permissive numeric default so member accesses can participate in
+        // arithmetic expressions. At runtime the actual values will determine
+        // the precise arithmetic path.
+        super(null, symbols.Type.floatWord);
         this.target = target;
         this.name = name;
     }

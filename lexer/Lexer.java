@@ -94,6 +94,7 @@ public class Lexer {
         // Comentários
         reserve(Word.commentWord);
         reserve(Word.extendsWord);
+        reserve(Word.inputWord);
     }
 
     /** Registra palavra reservada na tabela. */
@@ -255,10 +256,10 @@ public class Lexer {
             return new Word(sb.toString(), Tag.TEXT);
         }
 
-        // Identificadores e palavras reservadas
+        // Identificadores e palavras reservadas (permitir underscore em nomes como c_channel)
         if (Character.isLetter(peek)) {
             StringBuilder b = new StringBuilder();
-            do { b.append(peek); readch(); } while (Character.isLetterOrDigit(peek));
+            do { b.append(peek); readch(); } while (Character.isLetterOrDigit(peek) || peek == '_');
 
             String s = b.toString();
             Word w = words.get(s);

@@ -4,7 +4,7 @@ import lexer.Token;
 import symbols.Type;
 
 public class Rel extends Expr {
-    public final Expr expr1, expr2;
+    private final Expr expr1, expr2;
 
     public Rel(Token op, Expr e1, Expr e2) {
         super(op, Type.boolWord);
