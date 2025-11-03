@@ -12,6 +12,9 @@ public class Id extends Expr {
         this.type = p;
         this.offset = b;
     }
+    // For array declarations with dynamic size, store the size expression here.
+    // When non-null, Decl.exec will evaluate this expression at runtime to allocate the array.
+    public Expr sizeExpr = null;
     // Retorna o nome da variável
     public String getName() {
         return ((Word) op).lexeme;

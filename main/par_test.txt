@@ -1,0 +1,45 @@
+class Fibonacci{
+    def calcular(){
+        int array[5];
+        array[0] = 1;
+        array[1] = 1;
+
+        for(int i = 2; i < 5; i++){
+            array[i] = array[i - 1] + array[i - 2];
+            print(array[i]);
+        }
+        print("Fibonacci de 5:");
+        print(array[4]);
+    }
+}
+
+class Fatorial{
+    int resultado;
+    int n;
+
+    def Fatorial(int n){
+        this.n = n;
+        this.resultado = 1;
+    }
+
+    def calcular(){
+        int fatorial = 1;
+
+        for(int i = 1; i <= this.n; i++){
+            int fatorial = fatorial * i;
+            print(fatorial);
+        }
+
+        print("Fatorial de:");
+        print(this.n);
+        print(fatorial);
+    }
+}
+
+Fibonacci fibonacci = new Fibonacci();
+Fatorial fatorial = new Fatorial(5);
+
+par{
+    fibonacci.calcular();
+    fatorial.calcular();
+}

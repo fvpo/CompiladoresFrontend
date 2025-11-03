@@ -22,11 +22,16 @@ public class Decl extends Stmt {
                 value = new java.util.concurrent.LinkedBlockingQueue<>();
             }
         } else if (id.type instanceof symbols.Array arrType) {
-            // Inicializa o array com tamanho e tipo padrão
+            // Initialize the array. If the Id carries a dynamic size expression, evaluate it now.
             int size = arrType.size;
+            if (id.sizeExpr != null) {
+                Object szv = id.sizeExpr.eval();
+                if (!(szv instanceof Number)) throw new RuntimeException("Tamanho do array não é inteiro: " + szv);
+                size = ((Number) szv).intValue();
+            }
             Object[] elems = new Object[size];
             for (int i = 0; i < size; i++) {
-                // valor padrão do tipo base (ex: 0 para int, 0.0 para float)
+                // default value per base type
                 if (arrType.of == symbols.Type.intWord) {
                     elems[i] = 0;
                 } else if (arrType.of == symbols.Type.floatWord && arrType.of != null) {

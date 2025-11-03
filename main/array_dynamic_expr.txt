@@ -1,0 +1,9 @@
+int x;
+x = 2;
+int m;
+int n;
+m = 1;
+n = m + x;
+int b[n];
+b[2] = 7;
+print(b[2]);

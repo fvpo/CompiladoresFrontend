@@ -456,23 +456,54 @@ public class Parser {
                     match(Tag.SEMICOLON);
                     init = new New("c_channel", Type.cchannelWord);
                 } else if (look.tag == Tag.LBRACKET) {
-                    // Array declaration
+                    // Array declaration: allow either numeric literal size or any expression
                     match(Tag.LBRACKET);
-                    if (look.tag != Tag.NUM) error("Esperado tamanho do array");
-                    Num sizeTok = (Num) look;
-                    move();
+                    Expr sizeExpr = expr();
                     match(Tag.RBRACKET);
-                    
-                    // Update to array type
-                    id = new Id(idWord, new symbols.Array(declaredType, sizeTok.value), 0);
-                    symtab.declare(idWord.lexeme, id.type);
-                    
-                    // Optional array initialization
-                    if (look.tag == Tag.ASSIGN) {
-                        match(Tag.ASSIGN);
-                        init = arrExpr();
+
+                    // If size is a numeric literal constant, use static Array type and possibly default init
+                    if (sizeExpr instanceof inter.Constant) {
+                        Object vv = ((inter.Constant) sizeExpr).eval();
+                        if (vv instanceof Integer) {
+                            int sz = (Integer) vv;
+                            id = new Id(idWord, new symbols.Array(sz, declaredType), 0);
+                            symtab.declare(idWord.lexeme, id.type);
+
+                            // Optional array initialization
+                            if (look.tag == Tag.ASSIGN) {
+                                match(Tag.ASSIGN);
+                                init = arrExpr();
+                            }
+                            match(Tag.SEMICOLON);
+                        } else {
+                            // fallback to dynamic sizing: defer allocation until runtime
+                            id = new Id(idWord, new symbols.Array(0, declaredType), 0);
+                            symtab.declare(idWord.lexeme, id.type);
+                            if (look.tag == Tag.ASSIGN) {
+                                match(Tag.ASSIGN);
+                                init = arrExpr();
+                                match(Tag.SEMICOLON);
+                            } else {
+                                match(Tag.SEMICOLON);
+                                id.sizeExpr = sizeExpr;
+                            }
+                        }
+                    } else {
+                        // dynamic size: set a placeholder array type and initialize at runtime
+                        id = new Id(idWord, new symbols.Array(0, declaredType), 0);
+                        symtab.declare(idWord.lexeme, id.type);
+
+                        // If initializer provided, use it; otherwise create NewArray to evaluate size at runtime
+                        if (look.tag == Tag.ASSIGN) {
+                            match(Tag.ASSIGN);
+                            init = arrExpr();
+                            match(Tag.SEMICOLON);
+                        } else {
+                            match(Tag.SEMICOLON);
+                            // Defer allocation until runtime: attach sizeExpr to Id and leave init null
+                            id.sizeExpr = sizeExpr;
+                        }
                     }
-                    match(Tag.SEMICOLON);
                 } else {
                     // Regular variable
                     if (look.tag == Tag.ASSIGN) {
